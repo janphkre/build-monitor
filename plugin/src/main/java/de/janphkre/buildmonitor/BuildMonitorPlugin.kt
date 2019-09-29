@@ -1,6 +1,7 @@
 package de.janphkre.buildmonitor
 
-import de.janphkre.buildmonitor.properties.PropertiesMonitorAction
+import de.janphkre.buildmonitor.properties.EnvironmentMonitorAction
+import de.janphkre.buildmonitor.properties.GradlePropertiesMonitorAction
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -8,7 +9,8 @@ class BuildMonitorPlugin: Plugin<Project> {
 
     private val supportedGradleVersion = "5.4"
     private val monitorActions: List<IBuildMonitorAction> = listOf(
-        PropertiesMonitorAction()
+        GradlePropertiesMonitorAction(),
+        EnvironmentMonitorAction()
     )
 
     override fun apply(target: Project) {
