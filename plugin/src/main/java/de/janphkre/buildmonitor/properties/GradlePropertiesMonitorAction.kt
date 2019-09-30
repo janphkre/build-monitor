@@ -1,5 +1,6 @@
 package de.janphkre.buildmonitor.properties
 
+import de.janphkre.buildmonitor.BuildMonitorExtension
 import de.janphkre.buildmonitor.IBuildMonitorAction
 import de.janphkre.buildmonitor.IBuildMonitorActionResult
 import org.gradle.api.Project
@@ -18,7 +19,7 @@ class GradlePropertiesMonitorAction: IBuildMonitorAction {
 //        DEPENDENCIES("dependencies", { it.toString() })
     }
 
-    override fun monitor(target: Project): IBuildMonitorActionResult {
+    override fun monitor(target: Project, dslExtension: BuildMonitorExtension): IBuildMonitorActionResult {
         val properties = target.properties
         return PropertiesMonitorActionResult(GradlePropertyHandlers.values().mapNotNull {
             val value = properties[it.key] ?: return@mapNotNull null

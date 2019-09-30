@@ -1,5 +1,6 @@
 package de.janphkre.buildmonitor.properties
 
+import de.janphkre.buildmonitor.BuildMonitorExtension
 import de.janphkre.buildmonitor.IBuildMonitorAction
 import de.janphkre.buildmonitor.IBuildMonitorActionResult
 import org.gradle.api.Project
@@ -15,7 +16,7 @@ class EnvironmentMonitorAction: IBuildMonitorAction {
         "user.name"
     )
 
-    override fun monitor(target: Project): IBuildMonitorActionResult {
+    override fun monitor(target: Project, dslExtension: BuildMonitorExtension): IBuildMonitorActionResult {
         val properties = System.getProperties()
         return PropertiesMonitorActionResult(systemProperties.mapNotNull {
             val value = properties[it] ?: return@mapNotNull null

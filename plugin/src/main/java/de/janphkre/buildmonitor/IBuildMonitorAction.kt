@@ -3,5 +3,5 @@ package de.janphkre.buildmonitor
 import org.gradle.api.Project
 
 interface IBuildMonitorAction {
-    fun monitor(target: Project): IBuildMonitorActionResult
+    fun monitor(target: Project, dslExtension: BuildMonitorExtension): IBuildMonitorActionResult
 }

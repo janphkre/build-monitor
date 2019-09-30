@@ -1,5 +1,6 @@
 package de.janphkre.buildmonitor.report
 
+import de.janphkre.buildmonitor.BuildMonitorExtension
 import de.janphkre.buildmonitor.BuildMonitorResult
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
@@ -8,11 +9,15 @@ import org.apache.http.impl.client.HttpClients
 import java.net.URI
 
 class ServerReporter(
-    serverUrl: String
+    dslExtension: BuildMonitorExtension
 ): IReporter {
 
-    private val reportUri = URI.create(serverUrl).resolve("/api/v1/builds")
-    private val httpClient = HttpClients.createDefault()
+    private val reportUri = URI.create(dslExtension.serverUrl!!).resolve("/api/v1/builds")
+    private val httpClient = HttpClients.custom().apply {
+        if(!dslExtension.followRedirects) {
+            disableRedirectHandling()
+        }
+    }.build()
 
     override fun report(buildMonitorResult: BuildMonitorResult) {
         val post = HttpPost(reportUri)

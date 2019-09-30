@@ -10,13 +10,14 @@ class LocalReporter(
 ): IReporter {
 
     override fun report(buildMonitorResult: BuildMonitorResult) {
-        println(buildMonitorResult.toString())
+        val jsonResult = buildMonitorResult.toString()
+        println(jsonResult)
         val timestamp = DateFormat.getDateTimeInstance().format(Date())
-        File(localBuildDir, "reports").apply {
+        File(localBuildDir, "reports/monitor").apply {
             mkdirs()
             File(this, "monitor-$timestamp.json").apply {
                 createNewFile()
-                bufferedWriter().use { it.write(buildMonitorResult.toString()) }
+                bufferedWriter().use { it.write(jsonResult) }
             }
         }
     }

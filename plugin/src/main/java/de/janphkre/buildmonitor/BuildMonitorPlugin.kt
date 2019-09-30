@@ -18,13 +18,14 @@ class BuildMonitorPlugin: Plugin<Project> {
         if(!target.gradle.gradleVersion.startsWith(supportedGradleVersion)) {
             throw UnsupportedOperationException("Only gradle version $supportedGradleVersion.* is supported by this plugin version.")
         }
+        val dslExtension = target.extensions.create("buildMonitor", BuildMonitorExtension::class.java)
+//TODO: We get this extension, but it is empty since the configuration of this project has not completed yet.
 
-        val monitorResult = monitorActions.map { it.monitor(target) }.fold(BuildMonitorResult()) { result, partialResult ->
+        val monitorResult = monitorActions.map { it.monitor(target, dslExtension) }.fold(BuildMonitorResult()) { result, partialResult ->
             partialResult.writeTo(result)
         }
 
-        //TODO: GET SERVER URL
-        val reporter = IReporter.reportFor(null, target.buildDir)
+        val reporter = IReporter.reportFor(dslExtension, target.buildDir)
         reporter.report(monitorResult)
     }
 }

@@ -1,5 +1,6 @@
 package de.janphkre.buildmonitor.report
 
+import de.janphkre.buildmonitor.BuildMonitorExtension
 import de.janphkre.buildmonitor.BuildMonitorResult
 import java.io.File
 
@@ -9,11 +10,11 @@ interface IReporter {
 
     companion object {
 
-        fun reportFor(serverUrl: String?, buildDir: File): IReporter {
-            return if(serverUrl == null) {
+        fun reportFor(dslExtension: BuildMonitorExtension, buildDir: File): IReporter {
+            return if(dslExtension.serverUrl == null) {
                 LocalReporter(buildDir)
             } else {
-                ServerReporter(serverUrl)
+                ServerReporter(dslExtension)
             }
         }
     }
