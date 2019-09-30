@@ -3,6 +3,7 @@ package de.janphkre.buildmonitor
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -43,6 +44,26 @@ class BuildMonitorPluginTest {
 
         assertTrue(result.output.contains("Hello world!"))
         assertEquals(TaskOutcome.SUCCESS, result.task(":helloWorld")!!.outcome)
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun helloWorld_withLocalReporter_generatesFile() {
+        val result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("helloWorld", "--stacktrace")
+            .withPluginClasspath()
+            .withDebug(true)
+            .build()
+
+        println(result.output)
+
+        val reports = File(testProjectDir.root, "build/reports").listFiles()
+        val monitorReport = reports?.firstOrNull { it.name.startsWith("monitor-") && it.extension == "json" }
+        assertNotNull("No monitor report was generated in \"build/reports\"", monitorReport)
+
+        monitorReport!!.readText()
+        //TODO: CHECK FILE CONTENT?
     }
 
     @Throws(IOException::class)

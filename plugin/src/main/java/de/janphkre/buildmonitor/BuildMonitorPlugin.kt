@@ -2,6 +2,7 @@ package de.janphkre.buildmonitor
 
 import de.janphkre.buildmonitor.properties.EnvironmentMonitorAction
 import de.janphkre.buildmonitor.properties.GradlePropertiesMonitorAction
+import de.janphkre.buildmonitor.report.IReporter
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -22,7 +23,8 @@ class BuildMonitorPlugin: Plugin<Project> {
             partialResult.writeTo(result)
         }
 
-        println(monitorResult)
-        //TODO("REPORT RESULT THROUGH API")
+        //TODO: GET SERVER URL
+        val reporter = IReporter.reportFor(null, target.buildDir)
+        reporter.report(monitorResult)
     }
 }
