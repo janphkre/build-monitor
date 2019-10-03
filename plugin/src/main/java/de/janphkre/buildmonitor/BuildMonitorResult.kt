@@ -15,6 +15,14 @@ class BuildMonitorResult {
 
     val environment = HashMap<String, String>()
 
+    private val jsonString by lazy {
+        StringBuilder()
+            .append("{\"environment\":{")
+            .writeWithHash(environment.hashCode(), Hashable.ENVIRONMENT) { environment.entries.joinTo(this, separator = ",") { "\"${it.key}\":\"${it.value}\"" } }
+            .append("}}")
+            .toString()
+    }
+
     private fun StringBuilder.writeWithHash(hashCode: Int, hashKey: Hashable, serializer: StringBuilder.() -> Unit): StringBuilder {
         this.append("\"hashCode\":$hashCode")
         if(hashCode == Hashing.previousHash(hashKey)) {
@@ -30,10 +38,6 @@ class BuildMonitorResult {
      * Serializes this result into a JSON string.
      */
     override fun toString(): String {
-        return StringBuilder()
-            .append("{\"environment\":{")
-            .writeWithHash(environment.hashCode(), Hashable.ENVIRONMENT) { environment.entries.joinTo(this, separator = ",") { "\"${it.key}\":\"${it.value}\"" } }
-            .append("}}")
-            .toString()
+        return jsonString
     }
 }

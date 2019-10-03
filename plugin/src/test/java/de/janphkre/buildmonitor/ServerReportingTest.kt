@@ -1,8 +1,6 @@
 package de.janphkre.buildmonitor
 
 import okhttp3.mockwebserver.MockWebServer
-import org.apache.http.entity.ContentType
-import org.gradle.internal.impldep.com.amazonaws.services.s3.Headers
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -37,6 +35,7 @@ class ServerReportingTest {
         BufferedWriter(FileWriter(buildFile)).use {
             it.write(helloWorldBuildFileContent)
         }
+        println("BuildFile: $helloWorldBuildFileContent")
     }
 
     @After
@@ -57,10 +56,11 @@ class ServerReportingTest {
 
         assertEquals(1, mockWebServer.requestCount)
         val request = mockWebServer.takeRequest()
+        request.path
         assertEquals("POST", request.method)
-        assertEquals("api/v1/builds", request.path)
-        assertEquals(ContentType.APPLICATION_JSON.toString(), request.getHeader(Headers.CONTENT_TYPE))
+        println(request.requestLine)
+        assertEquals("/api/v1/builds", request.path)
+        assertEquals("application/json; charset=utf-8", request.getHeader("Content-Type"))
         TODO("Check body.")
-
     }
 }

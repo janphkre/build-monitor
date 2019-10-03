@@ -11,7 +11,7 @@ interface IReporter {
     companion object {
 
         fun reportFor(dslExtension: BuildMonitorExtension, buildDir: File): IReporter {
-            return if(dslExtension.serverUrl == null) {
+            return if(dslExtension.getFinalServerUrl() == null) {
                 LocalReporter(buildDir)
             } else {
                 ServerReporter(dslExtension)
