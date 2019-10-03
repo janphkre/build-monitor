@@ -1,7 +1,9 @@
 package de.janphkre.buildmonitor
 
+import org.gradle.internal.impldep.com.fasterxml.jackson.databind.ObjectMapper
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -10,8 +12,9 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.util.HashMap
 
-open class LocalReportingTest {
+class LocalReportingTest {
     @get:Rule
     val testProjectDir = TemporaryFolder()
 
@@ -45,6 +48,6 @@ open class LocalReportingTest {
         assertNotNull("No monitor report was generated in \"build/reports\"", monitorReport)
 
         val fileContent = monitorReport!!.readText()
-        TODO("CHECK FILE CONTENT? $fileContent")
+        JsonStructureVerifier(fileContent).verify()
     }
 }

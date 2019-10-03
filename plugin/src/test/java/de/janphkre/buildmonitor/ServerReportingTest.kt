@@ -12,6 +12,7 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.nio.charset.Charset
 
 class ServerReportingTest {
 
@@ -56,11 +57,10 @@ class ServerReportingTest {
 
         assertEquals(1, mockWebServer.requestCount)
         val request = mockWebServer.takeRequest()
-        request.path
         assertEquals("POST", request.method)
-        println(request.requestLine)
         assertEquals("/api/v1/builds", request.path)
         assertEquals("application/json; charset=utf-8", request.getHeader("Content-Type"))
-        TODO("Check body.")
+
+        JsonStructureVerifier(request.body.readString(Charset.forName("UTF-8"))).verify()
     }
 }
