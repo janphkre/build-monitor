@@ -1,12 +1,14 @@
-package de.janphkre.buildmonitor.properties
+package de.janphkre.buildmonitor.actions.properties
 
 import de.janphkre.buildmonitor.BuildMonitorExtension
-import de.janphkre.buildmonitor.IBuildMonitorAction
-import de.janphkre.buildmonitor.IBuildMonitorActionResult
+import de.janphkre.buildmonitor.actions.IBuildMonitorAction
+import de.janphkre.buildmonitor.actions.IBuildMonitorActionResult
 import org.gradle.api.Project
 import org.gradle.api.invocation.Gradle
 
 class GradlePropertiesMonitorAction: IBuildMonitorAction {
+
+    private var result: IBuildMonitorActionResult? = null
 
     //Entries are used in monitor as PropertyHandlers.values()
     @Suppress("unused")
@@ -19,12 +21,16 @@ class GradlePropertiesMonitorAction: IBuildMonitorAction {
 //        DEPENDENCIES("dependencies", { it.toString() })
     }
 
-    override fun monitor(target: Project, dslExtension: BuildMonitorExtension): IBuildMonitorActionResult {
+    override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {
         val properties = target.properties
-        return PropertiesMonitorActionResult(GradlePropertyHandlers.values().mapNotNull {
+        result = PropertiesMonitorActionResult(GradlePropertyHandlers.values().mapNotNull {
             val value = properties[it.key] ?: return@mapNotNull null
             Pair("project.${it.key}", it.handler.invoke(value))
 
         })
+    }
+
+    override fun getResult(): IBuildMonitorActionResult? {
+        return result
     }
 }

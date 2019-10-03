@@ -21,8 +21,7 @@ class ServerReporter(
                 writer.run {
                     write("POST /api/v1/builds HTTP/1.1\r\n")
                     write("Connection: close\r\n")
-                    write("Content-Length: ${requestBody.length}\r\n")
-                    write("Client: Gradle Build Monitor Plugin\r\n")
+                    write("Content-Length: ${requestBody.length}\r\n")//TODO: IS THIS LENGTH CORRECT?
                     write("Content-Type: application/json; charset=utf-8\r\n\r\n")
                     write(requestBody)
                     flush()

@@ -1,7 +1,7 @@
-package de.janphkre.buildmonitor.properties
+package de.janphkre.buildmonitor.actions.properties
 
 import de.janphkre.buildmonitor.BuildMonitorResult
-import de.janphkre.buildmonitor.IBuildMonitorActionResult
+import de.janphkre.buildmonitor.actions.IBuildMonitorActionResult
 
 class PropertiesMonitorActionResult(
     private val properties: List<Pair<String, String>>

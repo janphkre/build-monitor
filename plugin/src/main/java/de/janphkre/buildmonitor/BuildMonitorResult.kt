@@ -14,23 +14,31 @@ import de.janphkre.buildmonitor.util.Hashing
 class BuildMonitorResult {
 
     val environment = HashMap<String, String>()
+    val result = HashMap<String, String>()
 
     private val jsonString by lazy {
         StringBuilder()
             .append("{\"environment\":{")
-            .writeWithHash(environment.hashCode(), Hashable.ENVIRONMENT) { environment.entries.joinTo(this, separator = ",") { "\"${it.key}\":\"${it.value}\"" } }
+            .writeWithHash(Hashable.ENVIRONMENT, environment)
+            .append("},\"result\":{")
+            .writeMap(result)
             .append("}}")
             .toString()
     }
 
-    private fun StringBuilder.writeWithHash(hashCode: Int, hashKey: Hashable, serializer: StringBuilder.() -> Unit): StringBuilder {
+    private fun StringBuilder.writeWithHash(hashKey: Hashable, map: Map<String, String>): StringBuilder {
+        val hashCode = map.hashCode()
         this.append("\"hashCode\":$hashCode")
         if(hashCode == Hashing.previousHash(hashKey)) {
             return this
         }
         Hashing.newHash(hashKey, hashCode)
         this.append(',')
-        serializer.invoke(this)
+        return writeMap(map)
+    }
+
+    private fun StringBuilder.writeMap(map: Map<String, String>): StringBuilder {
+        map.entries.joinTo(this, separator = ",") { "\"${it.key}\":\"${it.value}\"" }
         return this
     }
 

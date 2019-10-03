@@ -1,7 +1,9 @@
 package de.janphkre.buildmonitor
 
 import org.gradle.internal.impldep.com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import java.util.HashMap
 
 class JsonStructureVerifier(
@@ -10,9 +12,14 @@ class JsonStructureVerifier(
 
     private val map = ObjectMapper().readValue(jsonMonitorResult, HashMap::class.java)
 
-    fun verify() {
-        verifyEnvironment(map.checkedField<Map<*,*>>("environment"))
+    fun verifyFailure() {
+        verify("FAILURE")
+        map.checkedField<Map<*, *>>("result").checkedField<String>("exception")
+    }
 
+    fun verify(expectedResultType: String = "SUCCESS") {
+        verifyEnvironment(map.checkedField("environment"))
+        assertEquals(expectedResultType, map.checkedField<Map<*,*>>("result").checkedField<String>("status"))
     }
 
     private fun verifyEnvironment(environment: Map<*,*>) {
@@ -31,8 +38,8 @@ class JsonStructureVerifier(
 
     private inline fun <reified T> Map<*,*>.checkedField(key: String): T {
         val entry = this[key]
-        Assert.assertNotNull("Could not find field for key $key!", entry)
-        Assert.assertTrue("Field at $key is not of expected type!", entry is T)
+        assertNotNull("Could not find field for key $key!", entry)
+        assertTrue("Field at $key is not of expected type!", entry is T)
         return entry as T
     }
 }

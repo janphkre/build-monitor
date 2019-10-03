@@ -11,7 +11,6 @@ class LocalReporter(
 
     override fun report(buildMonitorResult: BuildMonitorResult) {
         val jsonResult = buildMonitorResult.toString()
-        println(jsonResult)
         val timestamp = DateFormat.getDateTimeInstance().format(Date())
         File(localBuildDir, "reports/monitor").apply {
             mkdirs()
