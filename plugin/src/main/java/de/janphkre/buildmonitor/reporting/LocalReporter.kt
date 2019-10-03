@@ -1,6 +1,6 @@
-package de.janphkre.buildmonitor.report
+package de.janphkre.buildmonitor.reporting
 
-import de.janphkre.buildmonitor.BuildMonitorResult
+import de.janphkre.buildmonitor.result.BuildMonitorResult
 import java.io.File
 import java.text.DateFormat
 import java.util.Date

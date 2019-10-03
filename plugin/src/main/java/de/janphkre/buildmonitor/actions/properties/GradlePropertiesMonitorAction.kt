@@ -1,36 +1,42 @@
 package de.janphkre.buildmonitor.actions.properties
 
 import de.janphkre.buildmonitor.BuildMonitorExtension
+import de.janphkre.buildmonitor.result.BuildMonitorResult
 import de.janphkre.buildmonitor.actions.IBuildMonitorAction
-import de.janphkre.buildmonitor.actions.IBuildMonitorActionResult
+import de.janphkre.buildmonitor.result.GradleMonitorResult
 import org.gradle.api.Project
-import org.gradle.api.invocation.Gradle
 
 class GradlePropertiesMonitorAction: IBuildMonitorAction {
 
-    private var result: IBuildMonitorActionResult? = null
-
-    //Entries are used in monitor as PropertyHandlers.values()
-    @Suppress("unused")
-    private enum class GradlePropertyHandlers(val key: String, val handler: (Any) -> String) {
-        PROJECT_DIR("projectDir", { it.toString() }),
-        NAME("name", { it.toString() }),
-        STATUS("status", { it.toString() }),
-        GRADLE("gradle", { (it as Gradle).gradleVersion })
-//        TASKS("tasks", { it.toString() }),
-//        DEPENDENCIES("dependencies", { it.toString() })
-    }
+    private var result: GradleMonitorResult? = null
 
     override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {
-        val properties = target.properties
-        result = PropertiesMonitorActionResult(GradlePropertyHandlers.values().mapNotNull {
-            val value = properties[it.key] ?: return@mapNotNull null
-            Pair("project.${it.key}", it.handler.invoke(value))
-
-        })
+        target.gradle.startParameter.let { startParameter ->
+            result = GradleMonitorResult(
+                startParameter.excludedTaskNames,
+                startParameter.taskNames,
+                startParameter.allInitScripts.map { it.absolutePath },
+                listOf(
+                    Pair("buildCache", startParameter.isBuildCacheEnabled),
+                    Pair("buildDependencies", startParameter.isBuildProjectDependencies),
+                    Pair("configureOnDemand", startParameter.isConfigureOnDemand),
+                    Pair("continuous", startParameter.isContinuous),
+                    Pair("continueOnFailure", startParameter.isContinueOnFailure),
+                    Pair("dryRun", startParameter.isDryRun),
+                    Pair("offline", startParameter.isOffline),
+                    Pair("buildScan", startParameter.isBuildScan),
+                    Pair("noBuildScan", startParameter.isNoBuildScan),
+                    Pair("profile", startParameter.isProfile),
+                    Pair("refreshDependencies", startParameter.isRefreshDependencies),
+                    Pair("rerunTasks", startParameter.isRerunTasks),
+                    Pair("searchUpwards", startParameter.isSearchUpwards),
+                    Pair("useEmptySettings", startParameter.isUseEmptySettings)
+                )
+            )
+        }
     }
 
-    override fun getResult(): IBuildMonitorActionResult? {
-        return result
+    override fun writeResultTo(buildMonitorResult: BuildMonitorResult) {
+        buildMonitorResult.gradle = result
     }
 }

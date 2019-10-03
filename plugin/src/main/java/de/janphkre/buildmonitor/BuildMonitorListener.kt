@@ -3,7 +3,9 @@ package de.janphkre.buildmonitor
 import de.janphkre.buildmonitor.actions.IBuildMonitorAction
 import de.janphkre.buildmonitor.actions.properties.EnvironmentMonitorAction
 import de.janphkre.buildmonitor.actions.properties.GradlePropertiesMonitorAction
-import de.janphkre.buildmonitor.report.IReporter
+import de.janphkre.buildmonitor.actions.properties.ProjectPropertiesMonitorAction
+import de.janphkre.buildmonitor.reporting.IReporter
+import de.janphkre.buildmonitor.result.BuildMonitorResult
 import de.janphkre.buildmonitor.util.EscapingJsonWriter
 import org.gradle.BuildListener
 import org.gradle.BuildResult
@@ -19,8 +21,9 @@ class BuildMonitorListener(
     private var rootProject: Project? = null
     private val preMonitorActions: List<IBuildMonitorAction> = listOf()
     private val postMonitorActions: List<IBuildMonitorAction> = listOf(
-        GradlePropertiesMonitorAction(),
-        EnvironmentMonitorAction()
+        ProjectPropertiesMonitorAction(),
+        EnvironmentMonitorAction(),
+        GradlePropertiesMonitorAction()
     )
 
     override fun buildFinished(buildResult: BuildResult) {
@@ -39,13 +42,16 @@ class BuildMonitorListener(
     }
 
     private fun collectResult(): BuildMonitorResult {
-        val intermediateResult = preMonitorActions.map { it.getResult() }
-            .fold(BuildMonitorResult()) { monitorResult, partialResult ->
-                partialResult?.writeTo(monitorResult) ?: monitorResult
+        val intermediateResult = preMonitorActions
+            .fold(BuildMonitorResult()) { monitorResult, action ->
+                action.writeResultTo(monitorResult)
+                monitorResult
             }
-        return postMonitorActions.map { it.monitor(rootProject!!, dslExtension); it.getResult() }
-            .fold(intermediateResult) { monitorResult, partialResult ->
-                partialResult?.writeTo(monitorResult) ?: monitorResult
+        return postMonitorActions
+            .fold(intermediateResult) { monitorResult, action ->
+                action.monitor(rootProject!!, dslExtension)
+                action.writeResultTo(monitorResult)
+                monitorResult
             }
     }
 
@@ -54,10 +60,10 @@ class BuildMonitorListener(
         if(failure != null) {
             val stringWriter = EscapingJsonWriter()
             failure.printStackTrace(PrintWriter(stringWriter))
-            monitorResult.result["exception"] = stringWriter.toString()
-            monitorResult.result["status"] = BuildResultType.FAILURE.name
+            monitorResult.result[RESULT_EXCEPTION_KEY] = stringWriter.toString()
+            monitorResult.result[RESULT_STATUS_KEY] = BuildResultType.FAILURE.name
         } else {
-            monitorResult.result["status"] = BuildResultType.SUCCESS.name
+            monitorResult.result[RESULT_STATUS_KEY] = BuildResultType.SUCCESS.name
         }
     }
 
@@ -85,5 +91,10 @@ class BuildMonitorListener(
 
     enum class BuildResultType {
         SUCCESS, FAILURE
+    }
+
+    companion object {
+        private const val RESULT_STATUS_KEY = "status"
+        private const val RESULT_EXCEPTION_KEY = "exception"
     }
 }

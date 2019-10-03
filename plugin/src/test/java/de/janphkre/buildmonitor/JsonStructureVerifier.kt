@@ -19,11 +19,11 @@ class JsonStructureVerifier(
 
     fun verify(expectedResultType: String = "SUCCESS") {
         verifyEnvironment(map.checkedField("environment"))
+        verifyGradle(map.checkedField("gradle"))
         assertEquals(expectedResultType, map.checkedField<Map<*,*>>("result").checkedField<String>("status"))
     }
 
     private fun verifyEnvironment(environment: Map<*,*>) {
-        environment.checkedField<Int>("hashCode")
         environment.checkedField<String>("project.projectDir")
         environment.checkedField<String>("project.gradle")
         environment.checkedField<String>("java.version")
@@ -34,6 +34,22 @@ class JsonStructureVerifier(
         environment.checkedField<String>("user.name")
         environment.checkedField<String>("project.name")
         environment.checkedField<String>("os.version")
+    }
+
+    private fun verifyGradle(gradle: Map<*,*>) {
+        gradle.checkedField<List<*>>("excludedTasks").let {
+            assertTrue(it.isEmpty())
+        }
+        gradle.checkedField<List<*>>("taskNames").let {
+            assertEquals(1, it.size)
+            assertEquals("helloWorld", it.first())
+        }
+        gradle.checkedField<List<*>>("initScripts").let {
+            assertTrue(it.isEmpty())
+        }
+        gradle.checkedField<Map<*,*>>("switches").forEach {
+            assertTrue(it.value is Boolean)
+        }
     }
 
     private inline fun <reified T> Map<*,*>.checkedField(key: String): T {
