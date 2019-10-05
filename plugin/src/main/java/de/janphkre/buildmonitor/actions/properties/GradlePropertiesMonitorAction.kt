@@ -1,42 +1,41 @@
 package de.janphkre.buildmonitor.actions.properties
 
 import de.janphkre.buildmonitor.BuildMonitorExtension
-import de.janphkre.buildmonitor.result.BuildMonitorResult
 import de.janphkre.buildmonitor.actions.IBuildMonitorAction
-import de.janphkre.buildmonitor.result.GradleMonitorResult
+import de.janphkre.buildmonitor.result.BuildMonitorResult
 import org.gradle.api.Project
 
 class GradlePropertiesMonitorAction: IBuildMonitorAction {
 
-    private var result: GradleMonitorResult? = null
+    private var result: HashMap<String, Any?>? = null
 
     override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {
         target.gradle.startParameter.let { startParameter ->
-            result = GradleMonitorResult(
-                startParameter.excludedTaskNames,
-                startParameter.taskNames,
-                startParameter.allInitScripts.map { it.absolutePath },
-                listOf(
-                    Pair("buildCache", startParameter.isBuildCacheEnabled),
-                    Pair("buildDependencies", startParameter.isBuildProjectDependencies),
-                    Pair("configureOnDemand", startParameter.isConfigureOnDemand),
-                    Pair("continuous", startParameter.isContinuous),
-                    Pair("continueOnFailure", startParameter.isContinueOnFailure),
-                    Pair("dryRun", startParameter.isDryRun),
-                    Pair("offline", startParameter.isOffline),
-                    Pair("buildScan", startParameter.isBuildScan),
-                    Pair("noBuildScan", startParameter.isNoBuildScan),
-                    Pair("profile", startParameter.isProfile),
-                    Pair("refreshDependencies", startParameter.isRefreshDependencies),
-                    Pair("rerunTasks", startParameter.isRerunTasks),
-                    Pair("searchUpwards", startParameter.isSearchUpwards),
-                    Pair("useEmptySettings", startParameter.isUseEmptySettings)
-                )
-            )
+            result = HashMap<String, Any?>(4).apply {
+                put("excludedTasks", startParameter.excludedTaskNames)
+                put("taskNames", startParameter.taskNames)
+                put("initScripts", startParameter.allInitScripts.map { it.absolutePath })
+                put("switches", HashMap<String, Any?>(14).apply {
+                    put("buildCache", startParameter.isBuildCacheEnabled)
+                    put("buildDependencies", startParameter.isBuildProjectDependencies)
+                    put("configureOnDemand", startParameter.isConfigureOnDemand)
+                    put("continuous", startParameter.isContinuous)
+                    put("continueOnFailure", startParameter.isContinueOnFailure)
+                    put("dryRun", startParameter.isDryRun)
+                    put("offline", startParameter.isOffline)
+                    put("buildScan", startParameter.isBuildScan)
+                    put("noBuildScan", startParameter.isNoBuildScan)
+                    put("profile", startParameter.isProfile)
+                    put("refreshDependencies", startParameter.isRefreshDependencies)
+                    put("rerunTasks", startParameter.isRerunTasks)
+                    put("searchUpwards", startParameter.isSearchUpwards)
+                    put("useEmptySettings", startParameter.isUseEmptySettings)
+                })
+            }
         }
     }
 
     override fun writeResultTo(buildMonitorResult: BuildMonitorResult) {
-        buildMonitorResult.gradle = result
+        buildMonitorResult.values["gradle"] = result
     }
 }

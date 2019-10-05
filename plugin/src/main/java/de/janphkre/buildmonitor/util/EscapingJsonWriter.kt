@@ -1,5 +1,6 @@
 package de.janphkre.buildmonitor.util
 
+import java.io.PrintWriter
 import java.io.Writer
 import java.lang.StringBuilder
 
@@ -48,5 +49,13 @@ class EscapingJsonWriter: Writer() {
 
     override fun toString(): String {
         return buffer.toString()
+    }
+
+    companion object {
+        fun writeFailure(throwable: Throwable): String {
+            val stringWriter = EscapingJsonWriter()
+            throwable.printStackTrace(PrintWriter(stringWriter))
+            return stringWriter.toString()
+        }
     }
 }

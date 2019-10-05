@@ -1,0 +1,11 @@
+plugins {
+    id 'de.janphkre.buildmonitor'
+}
+
+buildMonitor {
+    serverUrl "${buildMonitorServerUrl}"
+}
+
+task helloWorld {
+    doLast { println 'Hello world!' }
+}

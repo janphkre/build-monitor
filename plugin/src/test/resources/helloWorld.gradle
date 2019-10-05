@@ -1,0 +1,6 @@
+plugins {
+    id 'de.janphkre.buildmonitor'
+}
+task helloWorld {
+    doLast { println 'Hello world!' }
+}

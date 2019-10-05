@@ -1,75 +1,92 @@
 package de.janphkre.buildmonitor
 
-import org.gradle.testkit.runner.GradleRunner
+import de.janphkre.buildmonitor.util.BaseTest
+import de.janphkre.buildmonitor.util.JsonStructureVerifier
+import de.janphkre.buildmonitor.util.ResourceFile
 import org.gradle.testkit.runner.UnexpectedBuildFailure
-import org.junit.Assert.assertNotNull
-import org.junit.Rule
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
 import java.io.IOException
 
-class LocalReportingTest {
-    @get:Rule
-    val testProjectDir = TemporaryFolder()
+class LocalReportingTest: BaseTest() {
 
-    private lateinit var buildFile: File
 
-    private val helloWorldBuildFileContent: String
-        get()  = "plugins { id 'de.janphkre.buildmonitor' }; task helloWorld { doLast { println 'Hello world!' } }"
+    @Test
+    @Throws(IOException::class)
+    fun helloWorld_withLocalReporter_generatesFile() {
+        writeTestBuildFile(ResourceFile.HELLO_WORLD)
+        runBuild()
 
-    private val failingBuildFileContent: String
-        get()  = "plugins { id 'de.janphkre.buildmonitor' }; task helloWorld { doLast { throw new RuntimeException(\"Escaping exception message \\\"Failure-Message\\\"\") } }"
-
-    private fun writeBuildFile(content: String) {
-        buildFile = testProjectDir.newFile("build.gradle")
-        BufferedWriter(FileWriter(buildFile)).use {
-            it.write(content)
+        val verifier = JsonStructureVerifier(getReportContent())
+        verifier.verifyBase()
+        verifier.map.let { result ->
+            assertEquals("helloWorld", result.access("gradle").access("taskNames").access(0))
+            assertEquals("SUCCESS", result.access("result").access("status"))
         }
     }
 
     @Test
     @Throws(IOException::class)
-    fun helloWorld_withLocalReporter_generatesFile() {
-        writeBuildFile(helloWorldBuildFileContent)
-        val result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments("helloWorld", "--stacktrace")
-            .withPluginClasspath()
-            .withDebug(true)
-            .build()
-        println(result.output)
+    fun failingBuild_withLocalReporter_generatesFile() {
+        writeTestBuildFile(ResourceFile.FAILING)
+        try {
+            runBuild()
+        } catch(ignored: UnexpectedBuildFailure) { /*We were expecting this failure*/ }
 
-        val reports = File(testProjectDir.root, "build/reports/monitor").listFiles()
-        val monitorReport = reports?.firstOrNull { it.name.startsWith("monitor-") && it.extension == "json" }
-        assertNotNull("No monitor report was generated in \"build/reports\"", monitorReport)
-
-        val fileContent = monitorReport!!.readText()
-        println(fileContent)
-        JsonStructureVerifier(fileContent).verify()
+        val verifier = JsonStructureVerifier(getReportContent())
+        verifier.verifyBaseFailure()
+        verifier.map.let { result ->
+            assertEquals("helloWorld", result.access("gradle").access("taskNames").access(0))
+            assertEquals("FAILURE", result.access("result").access("status"))
+        }
     }
 
     @Test
     @Throws(IOException::class)
-    fun failingBuild_withLocalReporter_generatesFile() {
-        writeBuildFile(failingBuildFileContent)
+    fun grammarError_withLocalReporter_generatesFile() {
+        writeTestBuildFile(ResourceFile.GRAMMAR_ERROR)
         try {
-            GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments("helloWorld", "--stacktrace")
-                .withPluginClasspath()
-                .withDebug(true)
-                .build()
+            runBuild()
         } catch(ignored: UnexpectedBuildFailure) { /*We were expecting this failure*/ }
 
-        val reports = File(testProjectDir.root, "build/reports/monitor").listFiles()
-        val monitorReport = reports?.firstOrNull { it.name.startsWith("monitor-") && it.extension == "json" }
-        assertNotNull("No monitor report was generated in \"build/reports\"", monitorReport)
+        val verifier = JsonStructureVerifier(getReportContent())
+        verifier.verifyBaseFailure()
+        verifier.map.let { result ->
+            assertEquals("helloWorld", result.access("gradle").access("taskNames").access(0))
+            assertEquals("FAILURE", result.access("result").access("status"))
+        }
+    }
 
-        val fileContent = monitorReport!!.readText()
-        println(fileContent)
-        JsonStructureVerifier(fileContent).verifyFailure()
+    @Test
+    @Throws(IOException::class)
+    fun dependenciesBuild_withLocalReporter_generatesFile() {
+        writeTestBuildFile(ResourceFile.DEPENDENCIES)
+        runBuild()
+
+        val verifier = JsonStructureVerifier(getReportContent())
+        verifier.verifyBase()
+        verifier.verifyConfigurations()
+        verifier.map.let { result ->
+            assertEquals("helloWorld", result.access("gradle").access("taskNames").access(0))
+            assertEquals("SUCCESS", result.access("result").access("status"))
+        }
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun javaBuild_withLocalReporter_generatesFile() {
+        writeTestBuildFile(ResourceFile.JAVA_BUILD_GRADLE)
+        writeTestProjectFile(ResourceFile.JAVA_BUILD_CLASS, "src/main/java/Something.java")
+        runBuild("build")
+
+        val verifier = JsonStructureVerifier(getReportContent())
+        verifier.verifyBase()
+        verifier.verifyConfigurations()
+        verifier.verifyConfigurationDependencies()
+        verifier.map.let { result ->
+            assertEquals("build", result.access("gradle").access("taskNames").access(0))
+            assertEquals("SUCCESS", result.access("result").access("status"))
+            assertEquals("androidx.core:core:1.0.0", result.access("configurations").access(4).access("resolvedDependencies").access(0).access("name"))
+        }
     }
 }

@@ -13,6 +13,7 @@ class BuildMonitorPlugin: Plugin<Project> {
         }
         val dslExtension = target.extensions.create("buildMonitor", BuildMonitorExtension::class.java, target.objects)
 
+        //TODO: modules?!
         target.gradle.addBuildListener(BuildMonitorListener(dslExtension))
     }
 }

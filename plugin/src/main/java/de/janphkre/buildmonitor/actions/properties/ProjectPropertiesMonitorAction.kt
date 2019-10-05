@@ -8,7 +8,7 @@ import org.gradle.api.invocation.Gradle
 
 class ProjectPropertiesMonitorAction: IBuildMonitorAction {
 
-    private var result: List<Pair<String, String>>? = null
+    private var result: HashMap<String, Any?>? = null
 
     //Entries are used in monitor as PropertyHandlers.values()
     @Suppress("unused")
@@ -17,19 +17,20 @@ class ProjectPropertiesMonitorAction: IBuildMonitorAction {
         NAME("name", { it.toString() }),
         STATUS("status", { it.toString() }),
         GRADLE("gradle", { (it as Gradle).gradleVersion })
-//        TASKS("tasks", { it.toString() }),
-//        DEPENDENCIES("dependencies", { it.toString() })
+//TODO:        TASKS("tasks", { it.toString() }),
     }
 
     override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {
         val properties = target.properties
-        result = GradlePropertyHandlers.values().mapNotNull {
-            val value = properties[it.key] ?: return@mapNotNull null
-            Pair("project.${it.key}", it.handler.invoke(value))
+        result = HashMap<String, Any?>(GradlePropertyHandlers.values().size).apply {
+            GradlePropertyHandlers.values().forEach {
+                val value = properties[it.key] ?: return@forEach
+                put(it.key, it.handler.invoke(value))
+            }
         }
     }
 
     override fun writeResultTo(buildMonitorResult: BuildMonitorResult) {
-        result?.let { buildMonitorResult.environment.putAll(it) }
+        buildMonitorResult.values["project"] = result
     }
 }

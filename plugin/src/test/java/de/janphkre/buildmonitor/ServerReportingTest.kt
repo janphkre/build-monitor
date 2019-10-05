@@ -1,30 +1,17 @@
 package de.janphkre.buildmonitor
 
+import de.janphkre.buildmonitor.util.BaseTest
+import de.janphkre.buildmonitor.util.JsonStructureVerifier
+import de.janphkre.buildmonitor.util.ResourceFile
 import okhttp3.mockwebserver.MockWebServer
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
 import java.io.IOException
 import java.nio.charset.Charset
 
-class ServerReportingTest {
-
-    @get:Rule
-    val testProjectDir = TemporaryFolder()
-
-    private lateinit var buildFile: File
-
-    private val helloWorldBuildFileContent: String
-        get()  = "plugins { id 'de.janphkre.buildmonitor' };" +
-                "buildMonitor { serverUrl \"${mockWebServer.url("")}\" };" +
-                "task helloWorld { doLast { println 'Hello world!' } }"
+class ServerReportingTest: BaseTest() {
 
     private lateinit var mockWebServer: MockWebServer
 
@@ -32,11 +19,7 @@ class ServerReportingTest {
     @Throws(IOException::class)
     fun setup() {
         mockWebServer = MockWebServer()
-        buildFile = testProjectDir.newFile("build.gradle")
-        BufferedWriter(FileWriter(buildFile)).use {
-            it.write(helloWorldBuildFileContent)
-        }
-        println("BuildFile: $helloWorldBuildFileContent")
+        writeTestProjectFile("buildMonitorServerUrl=${mockWebServer.url("")}", "gradle.properties")
     }
 
     @After
@@ -47,13 +30,8 @@ class ServerReportingTest {
     @Test
     @Throws(IOException::class)
     fun helloWorld_withServerReporter_sendsRequest() {
-        val result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments("helloWorld", "--stacktrace")
-            .withPluginClasspath()
-            .withDebug(true)
-            .build()
-        println(result.output)
+        writeTestBuildFile(ResourceFile.SERVER_HELLO_WORLD)
+        runBuild()
 
         assertEquals(1, mockWebServer.requestCount)
         val request = mockWebServer.takeRequest()
@@ -61,6 +39,14 @@ class ServerReportingTest {
         assertEquals("/api/v1/builds", request.path)
         assertEquals("application/json; charset=utf-8", request.getHeader("Content-Type"))
 
-        JsonStructureVerifier(request.body.readString(Charset.forName("UTF-8"))).verify()
+        val requestBodyContent = request.body.readString(
+            Charset.forName("UTF-8")
+        )
+        val verifier = JsonStructureVerifier(requestBodyContent)
+        verifier.verifyBase()
+        verifier.map.let { result ->
+            assertEquals("helloWorld", result.access("gradle").access("taskNames").access(0))
+            assertEquals("SUCCESS", result.access("result").access("status"))
+        }
     }
 }

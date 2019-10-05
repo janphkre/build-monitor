@@ -7,7 +7,7 @@ import org.gradle.api.Project
 
 class EnvironmentMonitorAction: IBuildMonitorAction {
 
-    private var result: List<Pair<String, String>>? = null
+    private var result: HashMap<String, Any?>? = null
 
     private val systemProperties = listOf(
         "java.version",
@@ -20,13 +20,15 @@ class EnvironmentMonitorAction: IBuildMonitorAction {
 
     override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {
         val properties = System.getProperties()
-        result = systemProperties.mapNotNull {
-            val value = properties[it] ?: return@mapNotNull null
-            Pair(it, value.toString())
+        result = HashMap<String, Any?>(systemProperties.size).apply {
+            systemProperties.forEach {
+                val value = properties[it] ?: return@forEach
+                put(it, value)
+            }
         }
     }
 
     override fun writeResultTo(buildMonitorResult: BuildMonitorResult) {
-        result?.let { buildMonitorResult.environment.putAll(it) }
+        buildMonitorResult.values["environment"] = result
     }
 }

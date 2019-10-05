@@ -1,0 +1,13 @@
+plugins {
+    id 'de.janphkre.buildmonitor'
+    id 'java'
+}
+
+dependencies {
+    implementation "junit:junit:4.12"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.9.8"
+}
+
+task helloWorld {
+    doLast { println 'Hello world!' }
+}
