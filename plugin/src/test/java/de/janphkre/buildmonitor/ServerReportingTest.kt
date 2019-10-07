@@ -39,9 +39,8 @@ class ServerReportingTest: BaseTest() {
         assertEquals("/api/v1/builds", request.path)
         assertEquals("application/json; charset=utf-8", request.getHeader("Content-Type"))
 
-        val requestBodyContent = request.body.readString(
-            Charset.forName("UTF-8")
-        )
+        val requestBodyContent = request.body.readString(Charset.forName("UTF-8"))
+        println(requestBodyContent)
         val verifier = JsonStructureVerifier(requestBodyContent)
         verifier.verifyBase()
         verifier.map.let { result ->

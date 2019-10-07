@@ -94,6 +94,8 @@ class JsonStructureVerifier(
         environment.checkedField<String>("os.name")
         environment.checkedField<String>("user.name")
         environment.checkedField<String>("os.version")
+        environment.checkedField<Int>("processors")
+        environment.checkedField<Int>("gcTime")
     }
 
     private fun verifyGradle(gradle: Map<*,*>) {

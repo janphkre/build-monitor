@@ -5,6 +5,8 @@ import de.janphkre.buildmonitor.util.JsonStructureVerifier
 import de.janphkre.buildmonitor.util.ResourceFile
 import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
 
@@ -22,6 +24,9 @@ class LocalReportingTest: BaseTest() {
         verifier.map.let { result ->
             assertEquals("helloWorld", result.access("gradle").access("taskNames").access(0))
             assertEquals("SUCCESS", result.access("result").access("status"))
+            assertFalse(result.access("gradle").access("switches").access("daemon") as Boolean)
+            assertFalse(result.access("gradle").access("switches").access("parallel") as Boolean)
+            assertTrue(result.access("gradle").access("switches").access("buildDependencies") as Boolean)
         }
     }
 
