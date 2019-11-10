@@ -5,6 +5,7 @@ import de.janphkre.buildmonitor.actions.configuration.ConfigurationMonitorAction
 import de.janphkre.buildmonitor.actions.properties.EnvironmentMonitorAction
 import de.janphkre.buildmonitor.actions.properties.GradlePropertiesMonitorAction
 import de.janphkre.buildmonitor.actions.properties.ProjectPropertiesMonitorAction
+import de.janphkre.buildmonitor.actions.tasks.TaskMonitorAction
 import de.janphkre.buildmonitor.reporting.IReporter
 import de.janphkre.buildmonitor.result.BuildMonitorResult
 import de.janphkre.buildmonitor.util.EscapingJsonWriter
@@ -24,7 +25,8 @@ class BuildMonitorListener(
         ProjectPropertiesMonitorAction(),
         EnvironmentMonitorAction(),
         GradlePropertiesMonitorAction(),
-        ConfigurationMonitorAction()
+        ConfigurationMonitorAction(),
+        TaskMonitorAction()
     )
 
     override fun buildFinished(buildResult: BuildResult) {

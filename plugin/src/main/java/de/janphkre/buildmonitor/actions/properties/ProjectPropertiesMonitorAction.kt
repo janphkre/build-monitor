@@ -17,7 +17,6 @@ class ProjectPropertiesMonitorAction: IBuildMonitorAction {
         NAME("name", { it.toString() }),
         STATUS("status", { it.toString() }),
         GRADLE("gradle", { (it as Gradle).gradleVersion })
-//TODO:        TASKS("tasks", { it.toString() }),
     }
 
     override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {

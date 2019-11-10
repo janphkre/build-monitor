@@ -25,17 +25,17 @@ class ConfigurationMonitorAction: IBuildMonitorAction {
                     putNonEmpty("unresolvedDependencies", lenientConfiguration.unresolvedModuleDependencies, ::monitorDependency)
                     putNonEmpty("dependencyConstraints", entry.value.dependencyConstraints) { constraint ->
                         HashMap<String, Any?>(4).apply {
-                            put("group", constraint.group)
-                            put("name", constraint.name)
-                            constraint.version?.let { put("version", it) }
+                            put(DEPENDENCY_GROUP_KEY, constraint.group)
+                            put(DEPENDENCY_NAME_KEY, constraint.name)
+                            constraint.version?.let { put(DEPENDENCY_VERSION_KEY, it) }
                             constraint.reason?.let { put("reason", it) }
                         }
                     }
                     putNonEmpty("forcedDependencies", entry.value.resolutionStrategy.forcedModules) { dependency ->
                         HashMap<String, Any?>(3).apply {
-                            put("group", dependency.group)
-                            put("name", dependency.name)
-                            dependency.version?.let { put("version", it) }
+                            put(DEPENDENCY_GROUP_KEY, dependency.group)
+                            put(DEPENDENCY_NAME_KEY, dependency.name)
+                            dependency.version?.let { put(DEPENDENCY_VERSION_KEY, it) }
                         }
                     }
                 }
@@ -48,7 +48,7 @@ class ConfigurationMonitorAction: IBuildMonitorAction {
 
     private fun monitorDependency(dependency: ResolvedDependency): HashMap<String, Any?> {
         return HashMap<String, Any?>(5).apply {
-            put("name", dependency.name)
+            put(DEPENDENCY_NAME_KEY, dependency.name)
             dependency.children.let {
                 if(it.isNotEmpty()) {
                     put("transitive", it.map(::monitorDependency))
@@ -61,9 +61,9 @@ class ConfigurationMonitorAction: IBuildMonitorAction {
         return HashMap<String, Any?>(4).apply {
             put("problem", EscapingJsonWriter.writeFailure(dependency.problem))
             val selector = dependency.selector
-            put("group", selector.group)
-            put("name", selector.name)
-            put("version", selector.version)
+            put(DEPENDENCY_GROUP_KEY, selector.group)
+            put(DEPENDENCY_NAME_KEY, selector.name)
+            put(DEPENDENCY_VERSION_KEY, selector.version)
         }
     }
 
@@ -75,5 +75,11 @@ class ConfigurationMonitorAction: IBuildMonitorAction {
 
     override fun writeResultTo(buildMonitorResult: BuildMonitorResult) {
         buildMonitorResult.values["configurations"] = result
+    }
+
+    companion object {
+        private const val DEPENDENCY_GROUP_KEY = "group"
+        private const val DEPENDENCY_NAME_KEY = "name"
+        private const val DEPENDENCY_VERSION_KEY = "version"
     }
 }

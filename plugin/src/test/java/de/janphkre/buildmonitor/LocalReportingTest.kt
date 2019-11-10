@@ -52,7 +52,10 @@ class LocalReportingTest: BaseTest() {
         writeTestBuildFile(ResourceFile.GRAMMAR_ERROR)
         try {
             runBuild()
-        } catch(ignored: UnexpectedBuildFailure) { /*We were expecting this failure*/ }
+        } catch(ignored: UnexpectedBuildFailure) {
+            /*We were expecting a failure*/
+            ignored.printStackTrace()
+        }
 
         val verifier = JsonStructureVerifier(getReportContent())
         verifier.verifyBaseFailure()
