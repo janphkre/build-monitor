@@ -20,6 +20,7 @@ class TaskMonitorAction: IBuildMonitorAction {
                         put("noSource", state.noSource)
                         put("upToDate", state.upToDate)
                         put("didWork", state.didWork)
+                        //TODO: RESULT = FROM CACHE?
                     }
                     task.group?.let { put("group", it) }
                     task.inputs.let { inputs ->
@@ -33,10 +34,6 @@ class TaskMonitorAction: IBuildMonitorAction {
                     }
                     put("dependencies", task.dependsOn.map { it.toString() })
                 }
-                //TODO: How can we see why didWork was true? -> Which file / inputParameter / dependency caused that?
-
-                // TODO: Task execution times
-                // TODO: Task log output
             }
         } catch (ignored: IllegalStateException) {
             /* We can ignore this exception as it means that the task graph was not populated */

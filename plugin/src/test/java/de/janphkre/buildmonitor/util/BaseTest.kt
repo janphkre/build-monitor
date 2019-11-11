@@ -15,6 +15,11 @@ abstract class BaseTest {
     @get:Rule
     val testProjectDir = TemporaryFolder()
 
+    protected fun createTestProjectCache() {
+        val testCacheFolder = testProjectDir.newFolder("local-cache")
+        writeTestProjectFile("buildCache.local.directory=\"${testCacheFolder.absolutePath}\"", "settings.gradle")
+    }
+
     protected fun writeTestBuildFile(resourceFile: ResourceFile) {
         writeTestProjectFile(resourceFile, "build.gradle")
     }
@@ -38,9 +43,11 @@ abstract class BaseTest {
         return file
     }
 
-    protected fun getReportContent(): String {
+    protected fun getLastReportContent(): String {
         val reports = File(testProjectDir.root, "build/reports/monitor").listFiles()
-        val monitorReport = reports?.firstOrNull { it.name.startsWith("monitor-") && it.extension == "json" }
+        val monitorReport = reports
+            ?.filter { it.name.startsWith("monitor-") && it.extension == "json" }
+            ?.maxBy { it.lastModified() }
         Assert.assertNotNull("No monitor report was generated in \"build/reports\"", monitorReport)
 
         val fileContent = monitorReport!!.readText()

@@ -7,5 +7,6 @@ enum class ResourceFile(val fileName: String) {
     DEPENDENCIES("dependencies.gradle"),
     GRAMMAR_ERROR("grammarError.gradle"),
     JAVA_BUILD_GRADLE("javaBuild/build.gradle"),
+    JAVA_GRADLE_PROPERTIES("javaBuild/gradle.properties"),
     JAVA_BUILD_CLASS("javaBuild/Something.java")
 }

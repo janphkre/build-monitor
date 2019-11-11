@@ -17,6 +17,8 @@ class TaskProgressMonitorAction: IBuildMonitorAction {
 
     override fun monitor(target: Project, dslExtension: BuildMonitorExtension) {
         TODO("not implemented")
+        // TODO: Task execution times
+        // TODO: Task log output
     }
 
     override fun writeResultTo(buildMonitorResult: BuildMonitorResult) {
